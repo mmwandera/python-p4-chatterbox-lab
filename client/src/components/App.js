@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Header from "./Header";
-import Search from "./Search";
 import MessageList from "./MessageList";
 import NewMessage from "./NewMessage";
+import Search from "./Search";
 
 const testUser = { username: "Duane" };
 
@@ -12,7 +12,7 @@ function App() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch("http://127.0.0.1:4000/messages")
+    fetch("http://127.0.0.1:5555/messages")
       .then((r) => r.json())
       .then((messages) => setMessages(messages));
   }, []);

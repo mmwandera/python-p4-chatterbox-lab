@@ -14,13 +14,48 @@ migrate = Migrate(app, db)
 
 db.init_app(app)
 
-@app.route('/messages')
+# GET /messages: returns an array of all messages as JSON, ordered by created_at in ascending order.
+# POST /messages: creates a new message with a body and username from params, and returns the newly created post as JSON.
+@app.route('/messages', methods=['GET', 'POST'])
 def messages():
-    return ''
+    if request.method == 'GET':
+        messages = Message.query.order_by('created_at').all()
+        
+        return make_response([message.to_dict() for message in messages],200 )
+    
+    elif request.method == 'POST':
+        data = request.get_json()
+        message = Message(
+            body=data['body'],
+            username=data['username']
+        )
 
-@app.route('/messages/<int:id>')
+        db.session.add(message)
+        db.session.commit()
+
+        return  make_response(message.to_dict(),  201,)
+
+# PATCH /messages/<int:id>: updates the body of the message using params, and returns the updated message as JSON.
+# DELETE /messages/<int:id>: deletes the message from the database.
+@app.route('/messages/<int:id>', methods=['PATCH', 'DELETE'])
 def messages_by_id(id):
-    return ''
+    message = Message.query.filter_by(id=id).first()
+
+    if request.method == 'PATCH':
+        data = request.get_json()
+        for attr in data:
+            setattr(message, attr, data[attr])
+            
+        db.session.add(message)
+        db.session.commit()
+
+        return make_response(message.to_dict(),200 )
+
+    elif request.method == 'DELETE':
+        db.session.delete(message)
+        db.session.commit()
+
+        return make_response( {'deleted': True} , 200)
 
 if __name__ == '__main__':
     app.run(port=5555)
